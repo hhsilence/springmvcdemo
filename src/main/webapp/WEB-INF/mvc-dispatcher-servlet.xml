@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <!--指明controller所在的包，并扫描其中的注解-->
+    <context:component-scan base-package="com.itec.clinic.controller"/>
+    <context:component-scan base-package="com.itec.clinic.service"/>
+    <!--静态资源(js,image等)的访问-->
+    <mvc:default-servlet-handler/>
+
+    <!--开启springmvc注解模式-->
+    <mvc:annotation-driven/>
+
+    <!--ViewResovler视图解析器-->
+    <!--用于支持Servlet、JSP视图解析-->
+    <bean id="ViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/pages/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!--配置转换器-->
+    <bean id = "conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <list>
+                <!--<bean class="com.itec.clinic.converter.DateConverter">-->
+                    <!--<constructor-arg type="java.lang.String" value="yyyy.MM.dd"/>-->
+                <!--</bean>-->
+                <!--
+                1.若有yyyy-MM-dd 则yyyy.MM.dd不起作用
+                2.若没有yyyy-MM-dd 则yyyy.MM.dd起作用 yyyy-MM-dd不可行 注释没有作用
+                3.如果没有这两个 注释起作用
+                1和3效果相同 yyyy-MM-dd才有用
+                -->
+                <bean class="com.itec.clinic.converter.DateConverter">
+                    <constructor-arg type="java.lang.String" value="yyyy-MM-dd"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <!--<mvc:annotation-driven conversion-service="conversionService"/>-->
+
+    <!--配置校验器-->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <!--校验器 使用Hibernate校验器-->
+        <property name="providerClass" value="org.hibernate.validator.HibernateValidator"/>
+        <!--指定校验使用的资源文件 在文件中配置校验错误消息，如果不指定则默认使用classpath下面的ValidatorMessages.properties文件-->
+        <property name="validationMessageSource" ref="messageSource"/>
+    </bean>
+
+    <!--校验错误消息配置文件-->
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <!--资源文件名-->
+        <property name="basename" value="validationMessage"/>
+        <!--资源文件编码格式-->
+        <property name="fileEncodings" value="utf8"/>
+        <!--对资源文件内容缓存时间 单位秒-->
+        <property name="cacheSeconds" value="120"/>
+    </bean>
+
+    <mvc:annotation-driven conversion-service="conversionService" validator="validator"/>
+</beans>
